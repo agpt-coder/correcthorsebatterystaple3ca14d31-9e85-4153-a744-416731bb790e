@@ -1,0 +1,89 @@
+// datasource db defines the database connection settings.
+// It is configured for PostgreSQL and uses an environment variable for the connection URL.
+// The 'extensions' feature enables the use of PostgreSQL-specific data types.
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+}
+
+// generator db configures Prisma Client settings.
+// It is set up to use Prisma Client Python with asyncio interface and specific features.
+generator db {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+  previewFeatures      = ["postgresqlExtensions"]
+}
+
+model User {
+  id             String   @id @default(dbgenerated("gen_random_uuid()"))
+  email          String   @unique
+  hashedPassword String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  role           Role     @default(USER)
+
+  Favorites   Favorite[]
+  ViewHistory ComicViewHistory[]
+}
+
+model Comic {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  num         Int      @unique
+  title       String
+  alt         String
+  img         String
+  link        String
+  news        String?
+  dateFetched DateTime @default(now())
+  cachedUntil DateTime @default(now())
+
+  ComicExplained Explanation[]
+  Views          ComicViewHistory[]
+  Favorite       Favorite[]
+}
+
+model Explanation {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  content   String
+  comicId   String   @unique
+  updatedAt DateTime @updatedAt
+
+  Comic Comic @relation(fields: [comicId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id      String @id @default(dbgenerated("gen_random_uuid()"))
+  userId  String
+  comicId String
+
+  User  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Comic Comic @relation(fields: [comicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, comicId])
+}
+
+model ComicViewHistory {
+  id       String   @id @default(dbgenerated("gen_random_uuid()"))
+  userId   String
+  comicId  String
+  viewedAt DateTime @default(now())
+
+  User  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Comic Comic @relation(fields: [comicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, comicId])
+}
+
+model Analytics {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  eventType  String
+  data       Json
+  occurredAt DateTime @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+

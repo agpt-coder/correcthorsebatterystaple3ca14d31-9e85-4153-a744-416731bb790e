@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "correcthorsebatterystaple"
+version = "0.1.0"
+description = "To create a tool that returns a random xkcd comic each time it is called, the following steps and considerations were gathered based on user requirements and technical research:"
+authors = ["AutoGPT <info@agpt.co>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+fastapi = "^0.85.0"
+httpx = "^0.23.0"
+prisma = "*"
+pydantic = "*"
+uvicorn = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
